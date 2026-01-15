@@ -1,0 +1,40 @@
+<div class="table-responsive bg-white rounded shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+        <thead class="bg-light text-muted small text-uppercase">
+            <tr>
+                <th>Name</th>
+                <th>Role / Details</th>
+                <th class="text-end">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in players %}
+            <tr>
+                <td class="fw-bold text-dark">{{ player.name }}</td>
+                <td>
+                    {% if player.details %}
+                        {% for key, val in player.details.items() %}
+                            <span class="badge bg-light text-dark border me-1">
+                                <span class="text-muted small">{{ key|replace('_', ' ')|capitalize }}:</span> {{ val }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted small">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-sm text-danger hover-scale">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3" class="text-center py-4 text-muted">
+                    No players in squad yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

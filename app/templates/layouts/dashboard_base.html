@@ -9,7 +9,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-    
+    <style>
+        /* Fix for invisible text on hover */
+.team-item:hover h6 {
+    color: #0d6efd !important; /* Bootstrap Primary Blue */
+}
+
+.team-item:hover small.text-muted {
+    color: #6c757d !important; /* Keep muted text visible */
+}
+
+/* Optional: Make the whole card pop a bit more on hover */
+.team-item:hover {
+    background-color: #f8f9fa; /* Very light gray background */
+    transform: translateX(5px); /* Slide slightly to the right */
+    transition: all 0.2s ease;
+}
+
+    </style>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 </head>
 <body class="bg-light">
@@ -36,7 +53,7 @@
                                 <i class="fas fa-user me-2"></i>{{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{{ url_for('users.dashboard') }}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('users.profile') }}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
                             </ul>
                         </li>
@@ -58,7 +75,24 @@
 
                 {% block content %}{% endblock %}
             </div>
-            
+            <div class="toast-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast align-items-center text-white bg-{{ category if category != 'message' else 'primary' }} border-0 shadow-lg"
+                         role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2"></i>
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
             <footer class="bg-white text-center py-3 mt-auto">
                 <small class="text-muted">&copy; 2026 Sports Manager. All rights reserved.</small>
             </footer>

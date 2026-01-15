@@ -84,9 +84,76 @@ $(document).ready(function() {
     });
 
 
+// 1. FILTER LOGIC (Auto-submit on change)
+$('.filter-input').on('change keyup', function() {
+    // Debounce search slightly
+    clearTimeout(window.filterTimeout);
+    window.filterTimeout = setTimeout(() => {
 
+        var formData = $('#filterForm').serialize();
 
+        $.ajax({
+            url: '/api/filter_events',
+            type: 'POST',
+            data: formData,
+            beforeSend: function() {
+                $('#events-grid').addClass('opacity-50');
+                $('#gridLoader').removeClass('d-none');
+            },
+            success: function(response) {
+                $('#events-grid').html(response.html).removeClass('opacity-50');
+                $('#gridLoader').addClass('d-none');
+            }
+        });
 
+    }, 300); // 300ms delay
+});
+// app/static/js/public/app.js
+
+// Make the function global by attaching it to 'window'
+window.toggleSave = function(eventId) {
+    $.ajax({
+        url: '/api/event/toggle_save',
+        type: 'POST',
+        data: { event_id: eventId },
+        success: function(resp) {
+            // Update the specific button clicked inside the modal
+            var btn = $('#btnSaveEvent');
+            var icon = btn.find('i');
+            var text = btn.find('span');
+
+            if(resp.action === 'saved') {
+                btn.removeClass('btn-outline-danger').addClass('btn-danger');
+                icon.removeClass('fa-heart-open').addClass('fa-heart');
+                text.text('Following');
+
+                // Optional: visual feedback
+                showToast('success', 'Event added to your favorites!');
+            } else {
+                btn.removeClass('btn-danger').addClass('btn-outline-danger');
+                icon.removeClass('fa-heart').addClass('fa-heart-open');
+                text.text('Follow');
+
+                showToast('info', 'Event removed from favorites.');
+            }
+        },
+        error: function(xhr) {
+            if(xhr.status === 401) {
+                // If user is not logged in, redirect or alert
+                window.location.href = '/auth/login';
+            } else {
+                alert("Error updating favorites.");
+            }
+        }
+    });
+};
+
+// Helper Toast Function (if you don't have one yet)
+function showToast(type, msg) {
+    // You can use the Bootstrap toast container from previous steps
+    // or a simple alert for now
+    console.log(type + ": " + msg);
+}
 
 
 

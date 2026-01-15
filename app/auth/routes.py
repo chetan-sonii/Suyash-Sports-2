@@ -4,9 +4,10 @@ from flask_login import login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import auth_bp
-from app.auth.forms import LoginForm, RegisterForm
+from app.auth.forms import LoginForm, RegisterForm, ResetPasswordForm, RequestResetForm
 from app.models import User
 from app.extensions import db
+from ..utils import send_reset_email
 
 
 def redirect_after_login(user):
@@ -20,7 +21,7 @@ def redirect_after_login(user):
         return redirect(url_for("users.manager_dashboard"))
     else:
         # Public users go to homepage
-        return redirect(url_for("users.dashboard"))
+        return redirect(url_for("users.profile"))
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -93,3 +94,39 @@ def logout():
     logout_user()
     flash("You have been logged out.", "info")
     return redirect(url_for("public.index"))
+
+
+@auth_bp.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('public.index'))
+
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        send_reset_email(user)
+        flash('An email has been sent with instructions to reset your password.', 'info')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/reset_request.html', form=form)
+
+
+@auth_bp.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('public.index'))
+
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('That is an invalid or expired token', 'warning')
+        return redirect(url_for('auth.reset_request'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = generate_password_hash(form.password.data)
+        user.password_hash = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! You can now log in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/reset_token.html', form=form)

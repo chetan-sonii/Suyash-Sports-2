@@ -1,6 +1,11 @@
+import time
+from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.dialects.mysql import JSON
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from app.extensions import db
+import jwt
 
 
 registrations = db.Table('registrations',
@@ -31,6 +36,33 @@ class User(db.Model, UserMixin):
     def avatar_url(self):
         """Helper to return full path for templates"""
         return f"images/uploads/avatars/{self.avatar}"
+
+    # === ADD THESE TWO METHODS ===
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_reset_token(self, expires_sec=1800):
+        """Generates a JWT token for password reset"""
+        return jwt.encode(
+            {'user_id': self.id, 'exp': time.time() + expires_sec},
+            current_app.config['SECRET_KEY'], algorithm='HS256'
+        )
+
+    @staticmethod
+    def verify_reset_token(token):
+        """Verifies the token and returns the user"""
+        try:
+            user_id = jwt.decode(
+                token,
+                current_app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
 # ==========================================
 # 2. MASTER DATA (The 4 Sports Definition)
 # ==========================================
@@ -68,6 +100,7 @@ class Event(db.Model):
     manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime)
     status = db.Column(db.String(20), default='upcoming')
@@ -81,6 +114,7 @@ class Event(db.Model):
     # === ADD THIS RELATIONSHIP ===
     venue = db.relationship('Venue', backref='event_list', lazy=True)
     # =============================
+    round_name = db.Column(db.String(50), nullable=True)  # Add this
 
     teams = db.relationship('Team', backref='event', lazy=True)
     fixtures = db.relationship('Fixture', backref='event', lazy=True)
@@ -146,3 +180,5 @@ class Fixture(db.Model):
     # Football: { "team_a_goals": 2, "team_b_goals": 1 }
     # Weightlifting: { "results": [ { "player_id": 5, "snatch": 100, "jerk": 130 } ] }
     score_data = db.Column(JSON, nullable=True)
+    team_a_obj = db.relationship('Team', foreign_keys=[team_a_id], lazy=True)
+    team_b_obj = db.relationship('Team', foreign_keys=[team_b_id], lazy=True)

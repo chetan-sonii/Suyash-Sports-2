@@ -1,0 +1,125 @@
+{% extends "layouts/dashboard_base.html" %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 text-center h-100">
+            <div class="card-body p-5">
+                <div class="position-relative d-inline-block mb-3">
+                    <img src="{{ url_for('static', filename=current_user.avatar_url) }}" 
+                         class="rounded-circle shadow-sm object-fit-cover" 
+                         style="width: 140px; height: 140px; border: 4px solid #fff;" 
+                         alt="Avatar">
+                    
+                    <label for="avatarUpload" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow hover-scale" style="cursor: pointer;">
+                        <i class="fas fa-camera small"></i>
+                    </label>
+                </div>
+
+                <h4 class="fw-bold mb-1">{{ current_user.username }}</h4>
+                <p class="text-muted mb-3">{{ current_user.email }}</p>
+                
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 text-uppercase" style="font-size: 0.75rem; letter-spacing: 1px;">
+                    {{ current_user.role }}
+                </span>
+
+                <div class="row mt-4 pt-4 border-top">
+                    {% if current_user.role == 'manager' %}
+                        <div class="col-6 border-end">
+                            <h3 class="fw-bold mb-0 text-dark">{{ stats.total_hosted }}</h3>
+                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Hosted</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="fw-bold mb-0 text-success">{{ stats.active_live }}</h3>
+                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Active</small>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <h3 class="fw-bold mb-0 text-dark">{{ stats.total_joined }}</h3>
+                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Events Joined</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-header bg-white border-bottom-0 py-3">
+            <h6 class="fw-bold mb-0"><i class="fas fa-user-edit me-2"></i>Update Details</h6>
+        </div>
+        <div class="card-body p-4">
+
+            <form action="{{ url_for('users.update_profile') }}" method="POST" enctype="multipart/form-data">
+
+                <input type="file" name="avatar" id="avatarUpload" class="d-none" onchange="previewImage(this)">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Email Address</label>
+                        <input type="email" name="email" class="form-control" value="{{ current_user.email }}" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold text-muted">Account Role</label>
+                        <input type="text" class="form-control bg-light" value="{{ current_user.role|capitalize }}" readonly>
+                        <div class="form-text small">Role changes require contacting the administrator.</div>
+                    </div>
+
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                            Save Info
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <hr class="my-4">
+
+            <form action="{{ url_for('users.change_password') }}" method="POST">
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Security</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">Current Password</label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                         <label class="form-label small fw-bold text-muted">New Password</label>
+                         <input type="password" name="new_password" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                         <label class="form-label small fw-bold text-muted">Confirm</label>
+                         <input type="password" name="confirm_password" class="form-control" required>
+                    </div>
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-4">
+                            Update Password
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            // Optional: You can add JS here to update the <img> src instantly
+            // For now, form submission handles the actual update
+            var form = input.closest('form');
+            // Auto submit or highlight save button? 
+            // Standard behavior is user clicks Save.
+        }
+    }
+</script>
+{% endblock %}

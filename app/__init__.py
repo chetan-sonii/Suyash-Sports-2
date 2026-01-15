@@ -25,10 +25,12 @@ def create_app(config_class=Config):
     from app.admin.routes import admin_bp
     from app.public.routes import public_bp
     from app.users.routes import users_bp
+    from app.errors.handlers import errors_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(public_bp, url_prefix='/')
     app.register_blueprint(users_bp, url_prefix='/users')
+    app.register_blueprint(errors_bp)
 
     return app
 

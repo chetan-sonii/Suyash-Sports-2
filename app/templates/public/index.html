@@ -56,30 +56,88 @@
     </div>
 </section>
 
-<section id="events" class="py-5 bg-light">
+<section id="events" class="py-5 bg-light position-relative">
     <div class="container py-4">
-        
+
         <div class="text-center mb-5" data-aos="fade-up">
-            <h6 class="text-primary fw-bold text-uppercase ls-2">Action Awaits</h6>
-            <h2 class="fw-bold display-5">Upcoming Tournaments</h2>
+            <h6 class="text-primary fw-bold text-uppercase ls-2">Discover Action</h6>
+            <h2 class="fw-bold display-5">Find Your Tournament</h2>
             <div class="heading-line mx-auto bg-primary mt-3"></div>
         </div>
 
-        <div class="d-flex justify-content-center flex-wrap gap-2 mb-5" data-aos="fade-up" data-aos-delay="100">
-            <button class="btn btn-filter active rounded-pill px-4" data-filter="all">All Sports</button>
-            {% for sport in sports %}
-                <button class="btn btn-filter rounded-pill px-4" data-filter="{{ sport.id }}">
-                    {{ sport.name }}
-                </button>
-            {% endfor %}
-        </div>
+        <div class="row g-4">
 
-        <div class="row g-4" id="events-grid">
-            {% include 'partials/event_cards.html' %}
-        </div>
+            <div class="col-lg-3" data-aos="fade-right">
+                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px; z-index: 1020;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-filter text-primary me-2"></i> Filters</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="filterForm">
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" name="search" class="form-control bg-light border-start-0 filter-input" placeholder="Event name...">
+                                </div>
+                            </div>
 
-        <div class="text-center mt-5">
-            <a href="#" class="btn btn-outline-dark rounded-pill px-5 py-2">View Full Calendar</a>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted">Sport</label>
+                                <select name="sport_id" class="form-select filter-input">
+                                    <option value="all">All Sports</option>
+                                    {% for sport in sports %}
+                                        <option value="{{ sport.id }}">{{ sport.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted">Venue / City</label>
+                                <select name="venue_id" class="form-select filter-input">
+                                    <option value="all">Any Location</option>
+                                    {% for venue in venues %}
+                                        <option value="{{ venue.id }}">{{ venue.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-muted">Timing</label>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-input" type="radio" name="date_filter" value="all" id="dateAll" checked>
+                                        <label class="form-check-label" for="dateAll">Any Time</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-input" type="radio" name="date_filter" value="week" id="dateWeek">
+                                        <label class="form-check-label" for="dateWeek">This Week</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input filter-input" type="radio" name="date_filter" value="month" id="dateMonth">
+                                        <label class="form-check-label" for="dateMonth">This Month</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary w-100 rounded-pill" onclick="resetFilters()">
+                                Reset Filters
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9">
+                <div id="gridLoader" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+
+                <div class="row g-4" id="events-grid">
+                    {% include 'partials/event_cards.html' %}
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
@@ -334,15 +392,5 @@
     </div>
 </section>
 
-<div class="modal fade" id="globalEventModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg">
-            <div id="modalContentLoader" class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'partials/global_event_modal.html' %}
 {% endblock %}

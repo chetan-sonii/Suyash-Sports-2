@@ -1,0 +1,122 @@
+{% extends "layouts/dashboard_base.html" %}
+
+{% block page_title %}My Tournaments{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="eventSearch" class="form-control border-start-0" placeholder="Search tournaments...">
+        </div>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('users.create_event') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+            <i class="fas fa-plus me-2"></i>Create New
+        </a>
+    </div>
+</div> 
+
+<div class="row g-4" id="eventsContainer">
+    {% for event in events %}
+    <div class="col-lg-6 event-item">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden hover-lift">
+            <div class="card-body p-0">
+                <div class="row g-0 h-100">
+                    <div class="col-1 bg-primary d-flex align-items-center justify-content-center text-white" 
+                         style="background: {{ 'linear-gradient(to bottom, #004aad, #cb6ce6)' if event.sport.name == 'Cricket' else 'linear-gradient(to bottom, #11998e, #38ef7d)' }};">
+                        <div class="writing-mode-vertical text-uppercase small fw-bold" style="transform: rotate(180deg); writing-mode: vertical-rl;">
+                            {{ event.sport.name }}
+                        </div>
+                    </div>
+
+                    <div class="col-11 p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-dark mb-0">{{ event.title }}</h5>
+                            
+                            {% if event.status == 'upcoming' %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Upcoming</span>
+                            {% elif event.status == 'live' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">● Live</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Completed</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-muted small mb-3">
+                            <i class="far fa-calendar-alt me-2"></i> {{ event.start_date.strftime('%d %b, %Y') }} 
+                            <span class="mx-2">•</span> 
+                            <i class="fas fa-map-marker-alt me-2"></i> {{ event.venue.name if event.venue else "TBD" }}
+                        </div>
+
+                        <div class="d-flex gap-4 border-top border-bottom py-2 mb-3 bg-light rounded px-3">
+                            <div class="text-center">
+                                <span class="d-block fw-bold text-dark">{{ event.teams|length }}</span>
+                                <small class="text-muted" style="font-size: 0.7rem;">TEAMS</small>
+                            </div>
+                            <div class="text-center border-start ps-4">
+                                <span class="d-block fw-bold text-dark">{{ event.fixtures|length }}</span>
+                                <small class="text-muted" style="font-size: 0.7rem;">MATCHES</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <button class="btn btn-sm text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ event.id }}">
+                                <i class="fas fa-trash-alt me-1"></i> Delete
+                            </button>
+                            
+                            <a href="{{ url_for('users.manage_event', event_id=event.id) }}" class="btn btn-primary rounded-pill px-4 fw-bold">
+    Manage Event <i class="fas fa-arrow-right ms-2"></i>
+</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal{{ event.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-danger">Delete Tournament?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>{{ event.title }}</strong>?</p>
+                    <p class="small text-muted">This action is permanent and will remove all teams, matches, and stats associated with this event.</p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('users.delete_event', event_id=event.id) }}" method="POST">
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Yes, Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486831.png" width="150" class="mb-4 opacity-50" alt="Empty">
+        <h4 class="fw-bold text-muted">No Tournaments Found</h4>
+        <p class="text-muted mb-4">You haven't hosted any events yet. Let's get the game started!</p>
+        <a href="{{ url_for('users.create_event') }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+            Create First Event
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simple Client-Side Search
+    $('#eventSearch').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('.event-item').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+</script>
+{% endblock %}

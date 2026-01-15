@@ -26,12 +26,12 @@ class Config:
     # -------------------------
     # Database (separate values)
     # -------------------------
-    DB_ENGINE = env("DB_ENGINE", "mysql+pymysql")
-    DB_USER = env("DB_USER", "root")
-    DB_PASSWORD = env("DB_PASSWORD", "")
-    DB_HOST = env("DB_HOST", "127.0.0.1")
-    DB_PORT = env("DB_PORT", "3306")
-    DB_NAME = env("DB_NAME", "forumdb")
+    DB_ENGINE = env("DB_ENGINE")
+    DB_USER = env("DB_USER")
+    DB_PASSWORD = env("DB_PASSWORD")
+    DB_HOST = env("DB_HOST")
+    DB_PORT = env("DB_PORT")
+    DB_NAME = env("DB_NAME", )
 
     SQLALCHEMY_DATABASE_URI = (
         f"{DB_ENGINE}://{DB_USER}:{DB_PASSWORD}"
@@ -39,3 +39,13 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    ADMIN_PASSWORD = env("ADMIN_PASSWORD", "admin123")
+    MANAGER_PASSWORD = env("MANAGER_PASSWORD", "pass123")
+    USER_PASSWORD = env("USER_PASSWORD", "pass123")
+
+    # Config to send reset email link
+    # MAIL_SERVER = 'smtp.googlemail.com'
+    # MAIL_PORT = 587
+    # MAIL_USE_TLS = True
+    # MAIL_USERNAME = os.environ.get('EMAIL_USER')
+    # MAIL_PASSWORD = os.environ.get('EMAIL_PASS')

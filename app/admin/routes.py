@@ -14,4 +14,4 @@ admin_bp = Blueprint(
 @admin_bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("admin/dashboard.html", title="Dashboard")
+    return render_template("admin/dashboard.html")
