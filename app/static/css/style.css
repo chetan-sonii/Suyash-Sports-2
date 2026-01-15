@@ -1,0 +1,290 @@
+/* =========================================
+   NAVBAR & TYPOGRAPHY
+   ========================================= */
+:root {
+    --primary-color: #0d6efd;
+    --dark-bg: #1a1a1a;
+    --nav-height: 80px;
+    --transition-speed: 0.4s;
+}
+
+/* 1. BASE NAVBAR STYLES */
+.navbar {
+    height: var(--nav-height);
+    transition: all var(--transition-speed) ease;
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin: 0 10px;
+    position: relative;
+    transition: color 0.3s;
+}
+
+/* Hover Effect for Links (Underline) */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s;
+}
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* =========================================
+   STATE 1: TRANSPARENT (Top of Page)
+   ========================================= */
+.navbar-transparent {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.navbar-transparent .navbar-brand {
+    color: #ffffff !important;
+}
+
+.navbar-transparent .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+.navbar-transparent .nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* Buttons in Transparent Mode */
+.navbar-transparent .btn-login-custom {
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 20px;
+    padding: 5px 20px;
+}
+.navbar-transparent .btn-signup-custom {
+    background: #fff;
+    color: var(--dark-bg);
+    border-radius: 20px;
+    padding: 5px 20px;
+    font-weight: 600;
+}
+.navbar-transparent .btn-user-custom {
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+/* =========================================
+   STATE 2: SCROLLED (Solid Background)
+   ========================================= */
+.navbar-scrolled {
+    background-color: rgba(255, 255, 255, 0.95); /* Glassmorphism */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    height: 70px; /* Slight shrink effect */
+}
+
+.navbar-scrolled .navbar-brand {
+    color: var(--dark-bg) !important;
+}
+.navbar-scrolled .text-primary-custom {
+    color: var(--primary-color);
+}
+
+.navbar-scrolled .nav-link {
+    color: #444 !important;
+}
+.navbar-scrolled .nav-link:hover,
+.navbar-scrolled .nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* Buttons in Scrolled Mode */
+.navbar-scrolled .btn-login-custom {
+    color: #444;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 5px 20px;
+}
+.navbar-scrolled .btn-login-custom:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.navbar-scrolled .btn-signup-custom {
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 20px;
+    padding: 5px 20px;
+    font-weight: 600;
+}
+
+.navbar-scrolled .btn-user-custom {
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+
+/* =========================================
+   HERO SECTION
+   ========================================= */
+#hero {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Full viewport height */
+    /* Replace with your actual image path or a URL */
+    background-attachment: fixed; /* Parallax Effect */
+    margin-top: -80px; /* Pulls hero up behind the transparent navbar */
+    padding-top: 80px; /* Pushes content down so it's not hidden by navbar */
+}
+
+/* Dark Overlay to make text readable */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%);
+    z-index: 1;
+}
+
+/* Animations & Typography */
+h1 span {
+    background: -webkit-linear-gradient(45deg, #ffc107, #ff8c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Buttons Hover Effects */
+#hero .btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    transition: transform 0.3s;
+}
+#hero .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(13, 110, 253, 0.4);
+}
+
+#hero .btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+    border-color: #fff;
+}
+
+
+/* Event Cards */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+.btn-filter {
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #555;
+    transition: all 0.3s;
+}
+.btn-filter:hover, .btn-filter.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+.heading-line {
+    width: 60px;
+    height: 4px;
+    border-radius: 2px;
+}
+
+
+
+/* =========================================
+   ABOUT SECTION
+   ========================================= */
+.about-shape {
+    filter: blur(80px); /* Creates the glowing background blob effect */
+    z-index: 0;
+}
+
+.blur-3xl {
+    filter: blur(3rem);
+}
+
+/* Floating Badge Animation */
+.ms-n4 {
+    margin-left: -1.5rem; /* Pulls the badge slightly out of the image */
+}
+
+/* Icon Box Styling */
+.icon-box {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+}
+
+/* Typography Spacing */
+.ls-2 {
+    letter-spacing: 2px;
+}
+
+
+/* =========================================
+   GALLERY SECTION
+   ========================================= */
+.gallery-item {
+    cursor: pointer;
+    overflow: hidden; /* Ensures image doesn't bleed out on zoom */
+}
+
+.gallery-item img {
+    transition: transform 0.5s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.1); /* Smooth Zoom effect */
+}
+
+.gallery-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+/* =========================================
+   CONTACT SECTION
+   ========================================= */
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    box-shadow: none;
+    border-color: var(--primary-color);
+}
+
+.form-floating > label {
+    color: #999;
+}

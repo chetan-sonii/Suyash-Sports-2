@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid min-vh-100 p-0">
+    <div class="row g-0 min-vh-100">
+        
+        <div class="col-lg-5 d-none d-lg-block position-relative">
+            <img src="{{ url_for('static', filename='images/4.jpg') }}" 
+                 class="img-fluid h-100 w-100 object-fit-cover" alt="Register Background">
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary opacity-50"></div>
+            <div class="position-absolute center-0 start-0 p-5 text-white top-50 translate-middle-y">
+                <h1 class="display-4 fw-bold">Join the League</h1>
+                <p class="lead">Create events, build teams, and compete.</p>
+            </div>
+        </div>
+
+        <div class="col-lg-7 d-flex align-items-center justify-content-center bg-light">
+            <div class="w-100 p-4 p-md-5" style="max-width: 600px;">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">Create Account</h3>
+                        
+                        <form method="POST" action="">
+                            {{ form.hidden_tag() }}
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        {{ form.username(class="form-control", placeholder="Username") }}
+                                        {{ form.username.label }}
+                                        {% for error in form.username.errors %}
+                                            <span class="text-danger small">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        {{ form.email(class="form-control", placeholder="Email") }}
+                                        {{ form.email.label }}
+                                        {% for error in form.email.errors %}
+                                            <span class="text-danger small">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form.password(class="form-control", placeholder="Password") }}
+                                        {{ form.password.label }}
+                                        {% for error in form.password.errors %}
+                                            <span class="text-danger small">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form.confirm_password(class="form-control", placeholder="Confirm") }}
+                                        {{ form.confirm_password.label }}
+                                        {% for error in form.confirm_password.errors %}
+                                            <span class="text-danger small">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        {{ form.role(class="form-select") }}
+                                        {{ form.role.label }}
+                                    </div>
+                                    <div class="form-text small mt-1">
+                                        <i class="fas fa-info-circle"></i> Managers can create tournaments. Viewers can join teams.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold">
+                                        Sign Up
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <span class="text-muted">Already registered?</span> 
+                            <a href="{{ url_for('auth.login') }}" class="text-primary fw-bold">Login here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

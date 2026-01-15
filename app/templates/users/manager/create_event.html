@@ -1,0 +1,387 @@
+{% extends "layouts/dashboard_base.html" %}
+
+{% block page_title %}Create New Tournament{% endblock %}
+
+{% block content %}
+<style>
+    /* WIZARD ANIMATIONS & STYLING */
+    .wizard-step {
+        display: none;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    .wizard-step.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Sport Selection Cards */
+    .sport-option-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    .sport-option-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .sport-option-card.selected {
+        border-color: var(--main-bg-color);
+        background-color: #f0f8ff;
+    }
+
+    /* Progress Bar Steps */
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        z-index: 2;
+        transition: all 0.3s;
+    }
+    .step-circle.active {
+        background: var(--main-bg-color);
+        color: #fff;
+        box-shadow: 0 0 0 5px rgba(13, 110, 253, 0.2);
+    }
+    .step-line {
+        height: 3px;
+        background: #e9ecef;
+        flex-grow: 1;
+        margin: 0 10px;
+        align-self: center;
+    }
+    .step-line.completed {
+        background: var(--main-bg-color);
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-xl-9 col-lg-10">
+        
+        <div class="d-flex justify-content-between mb-5 px-4 position-relative">
+            <div class="d-flex flex-column align-items-center">
+                <div class="step-circle active" id="circle1">1</div>
+                <small class="mt-2 fw-bold text-muted">Basics</small>
+            </div>
+            <div class="step-line" id="line1"></div>
+            <div class="d-flex flex-column align-items-center">
+                <div class="step-circle" id="circle2">2</div>
+                <small class="mt-2 fw-bold text-muted">The Sport</small>
+            </div>
+            <div class="step-line" id="line2"></div>
+            <div class="d-flex flex-column align-items-center">
+                <div class="step-circle" id="circle3">3</div>
+                <small class="mt-2 fw-bold text-muted">Rules</small>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4 border-0">
+                <h4 class="mb-0 fw-bold"><i class="fas fa-magic me-2"></i> Event Studio</h4>
+                <p class="mb-0 opacity-75 small">Configure your tournament in 3 simple steps.</p>
+            </div>
+            
+            <div class="card-body p-5">
+                <form action="" method="POST" id="createEventForm">
+                    
+                    <div class="wizard-step active" id="step1">
+                        <h5 class="fw-bold text-primary mb-4">Let's start with the basics</h5>
+                        
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="text" name="title" class="form-control" id="eventTitle" placeholder="Title" required>
+                                    <label for="eventTitle">Tournament Title</label>
+                                </div>
+                                <div class="form-text">Give your event a catchy name (e.g., "Monsoon Cricket Bash 2026").</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" name="venue_id" id="venueSelect" required>
+                                        <option value="" selected disabled>Select Venue</option>
+                                        {% for venue in venues %}
+                                            <option value="{{ venue.id }}">{{ venue.name }} ({{ venue.city }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="venueSelect">Venue / Stadium</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="date" name="start_date" class="form-control" id="startDate" required>
+                                    <label for="startDate">Start Date</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="description" placeholder="Desc" style="height: 100px"></textarea>
+                                    <label>Short Description (Optional)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 text-end">
+                            <button type="button" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" onclick="nextStep(2)">
+                                Select Sport <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wizard-step" id="step2">
+                        <h5 class="fw-bold text-primary mb-4">Choose your battlefield</h5>
+                        
+                        <input type="hidden" name="sport_id" id="selectedSportId" required>
+                        
+                        <div class="row g-4">
+                            {% for sport in sports %}
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card h-100 sport-option-card text-center p-3" onclick="selectSport(this, '{{ sport.id }}', '{{ sport.name }}')">
+                                    <div class="card-body">
+                                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-trophy text-warning fa-lg"></i>
+                                        </div>
+                                        <h6 class="fw-bold mb-1">{{ sport.name }}</h6>
+                                        <small class="text-muted">{{ sport.type|capitalize }} Sport</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-5 d-flex justify-content-between">
+                            <button type="button" class="btn btn-light btn-lg rounded-pill px-4" onclick="nextStep(1)">
+                                Back
+                            </button>
+                            <button type="button" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm" id="btnToStep3" disabled onclick="nextStep(3)">
+                                Configure Rules <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wizard-step" id="step3">
+                        <div class="d-flex align-items-center mb-4">
+                            <h5 class="fw-bold text-primary mb-0">Configure Rules: <span id="sportNameDisplay" class="text-dark"></span></h5>
+                            <span class="badge bg-warning text-dark ms-2">Advanced</span>
+                        </div>
+
+                        <div id="dynamicRulesContainer" class="row g-4 bg-light p-4 rounded-4 border">
+                            </div>
+
+                        <div class="mt-5 d-flex justify-content-between">
+                            <button type="button" class="btn btn-light btn-lg rounded-pill px-4" onclick="nextStep(2)">
+                                Change Sport
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-lg fw-bold">
+                                Create Tournament <i class="fas fa-check-circle ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 1. WIZARD NAVIGATION
+    function nextStep(stepNumber) {
+        // Validate Step 1
+        if (stepNumber === 2) {
+            if (!$('#eventTitle').val() || !$('#venueSelect').val() || !$('#startDate').val()) {
+                alert("Please fill in all basic details.");
+                return;
+            }
+        }
+
+        // Hide all steps
+        $('.wizard-step').removeClass('active');
+        
+        // Show target step
+        $('#step' + stepNumber).addClass('active');
+
+        // Update Progress Bar (Visuals)
+        updateProgress(stepNumber);
+    }
+
+    function updateProgress(step) {
+        // Reset
+        $('.step-circle').removeClass('active');
+        $('.step-line').removeClass('completed');
+
+        // Activate logic
+        if (step >= 1) $('#circle1').addClass('active');
+        if (step >= 2) { $('#circle2').addClass('active'); $('#line1').addClass('completed'); }
+        if (step >= 3) { $('#circle3').addClass('active'); $('#line2').addClass('completed'); }
+    }
+
+    // 2. SPORT SELECTION LOGIC
+    function selectSport(element, id, name) {
+        // Visual selection
+        $('.sport-option-card').removeClass('selected');
+        $(element).addClass('selected');
+        
+        // Set values
+        $('#selectedSportId').val(id);
+        $('#sportNameDisplay').text(name);
+        
+        // Enable Next Button
+        $('#btnToStep3').prop('disabled', false);
+
+        // TRIGGER THE GENERATOR
+        generateFields(name);
+    }
+
+    // 3. DYNAMIC FIELD GENERATOR (The "Data Rich" Part)
+    function generateFields(sportName) {
+        var container = $('#dynamicRulesContainer');
+        container.empty();
+
+        // --- A. CRICKET FIELDS ---
+        if (sportName === 'Cricket') {
+            container.append(`
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Match Format</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="rule_format" id="t20" value="T20" checked>
+                        <label class="btn btn-outline-primary" for="t20">T20</label>
+                        <input type="radio" class="btn-check" name="rule_format" id="odi" value="ODI">
+                        <label class="btn btn-outline-primary" for="odi">ODI</label>
+                        <input type="radio" class="btn-check" name="rule_format" id="test" value="Test">
+                        <label class="btn btn-outline-primary" for="test">Test</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Ball Type</label>
+                    <select name="rule_ball_type" class="form-select">
+                        <option value="Leather - Red">Leather (Red)</option>
+                        <option value="Leather - White">Leather (White)</option>
+                        <option value="Tennis - Hard">Tennis (Hard)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Overs Per Innings</label>
+                    <input type="number" name="rule_overs" class="form-control" value="20">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Powerplay Overs</label>
+                    <input type="number" name="rule_powerplay" class="form-control" value="6">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Squad Size Limit</label>
+                    <input type="number" name="rule_squad_limit" class="form-control" value="15">
+                </div>
+            `);
+        }
+
+        // --- B. FOOTBALL FIELDS ---
+        else if (sportName === 'Football') {
+            container.append(`
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Match Duration (Mins)</label>
+                    <input type="number" name="rule_duration" class="form-control" value="90">
+                    <div class="form-text">Total time excluding breaks.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Field Size</label>
+                    <select name="rule_pitch_size" class="form-select">
+                        <option value="Standard (11v11)">Standard (11v11)</option>
+                        <option value="Futsal (5v5)">Futsal (5v5)</option>
+                        <option value="7-a-side">7-a-side</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Substitutions Allowed</label>
+                    <input type="number" name="rule_subs" class="form-control" value="5">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Extra Time Rule</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="rule_extra_time" checked>
+                        <label class="form-check-label">Allow Extra Time / Penalties</label>
+                    </div>
+                </div>
+            `);
+        }
+
+        // --- C. KABADDI FIELDS ---
+        else if (sportName === 'Kabaddi') {
+            container.append(`
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Mat Surface Type</label>
+                    <select name="rule_mat_type" class="form-select">
+                        <option value="Synthetic Standard">Synthetic (Standard)</option>
+                        <option value="Mud / Clay">Mud / Clay</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Half Duration (Mins)</label>
+                    <input type="number" name="rule_half_time" class="form-control" value="20">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Raid Time Limit (Sec)</label>
+                    <input type="number" name="rule_raid_time" class="form-control" value="30">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Weight Limit (Kg)</label>
+                    <input type="number" name="rule_weight_limit" class="form-control" value="85">
+                </div>
+            `);
+        }
+
+        // --- D. WEIGHTLIFTING FIELDS ---
+        else if (sportName === 'Weightlifting') {
+            container.append(`
+                <div class="col-12 mb-3">
+                    <label class="form-label fw-bold d-block">Select Categories to Include:</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="checkbox" class="btn-check" name="rule_cats_men" id="cat_men" checked>
+                        <label class="btn btn-outline-secondary" for="cat_men">Men's</label>
+                        
+                        <input type="checkbox" class="btn-check" name="rule_cats_women" id="cat_women" checked>
+                        <label class="btn btn-outline-secondary" for="cat_women">Women's</label>
+                        
+                        <input type="checkbox" class="btn-check" name="rule_cats_junior" id="cat_junior">
+                        <label class="btn btn-outline-secondary" for="cat_junior">Juniors</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Scoring System</label>
+                    <select name="rule_scoring" class="form-select">
+                        <option value="Total (Snatch + Jerk)">Total (Snatch + Jerk)</option>
+                        <option value="Sinclair Coefficient">Sinclair Coefficient</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Attempts Per Lift</label>
+                    <input type="number" name="rule_attempts" class="form-control" value="3">
+                </div>
+            `);
+        }
+        
+        // --- GENERIC FALLBACK ---
+        else {
+             container.append(`
+                <div class="col-12"><p class="text-muted">No specific rules needed for this sport.</p></div>
+             `);
+        }
+    }
+</script>
+{% endblock %}

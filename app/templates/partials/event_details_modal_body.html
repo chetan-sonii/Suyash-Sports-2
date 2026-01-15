@@ -1,0 +1,79 @@
+<div class="modal-header bg-light border-0">
+    <div>
+        <span class="badge bg-primary mb-2">{{ event.sport.name }}</span>
+        <h4 class="modal-title fw-bold" id="exampleModalLabel">{{ event.title }}</h4>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body p-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <p class="text-muted mb-1"><small>DATE & TIME</small></p>
+            <p class="fw-bold"><i class="far fa-clock text-primary me-2"></i> {{ event.start_date.strftime('%d %B, %Y @ %I:%M %p') }}</p>
+        </div>
+        <div class="col-md-6">
+            <p class="text-muted mb-1"><small>VENUE</small></p>
+            <p class="fw-bold"><i class="fas fa-map-marker-alt text-danger me-2"></i> {{ event.venue.name if event.venue else "TBD" }}</p>
+        </div>
+    </div>
+
+    <hr class="opacity-25">
+
+    <h6 class="fw-bold text-uppercase text-primary ls-1 mb-3">Tournament Rules</h6>
+    <div class="bg-light p-3 rounded mb-4">
+        <div class="row g-3">
+            {% if event.rules_config %}
+                {% for key, value in event.rules_config.items() %}
+                <div class="col-6 col-md-4">
+                    <small class="text-muted text-uppercase d-block" style="font-size: 0.75rem;">{{ key|replace('_', ' ') }}</small>
+                    <span class="fw-bold text-dark">
+                        {% if value is iterable and value is not string %}
+                            {{ value|join(', ') }} {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted small mb-0">Standard international rules apply.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <h6 class="fw-bold text-uppercase text-primary ls-1 mb-3">
+        {% if event.sport.type == 'individual' %}
+            Participating Athletes
+        {% else %}
+            Registered Teams
+        {% endif %}
+    </h6>
+    
+    {% if event.teams %}
+        <div class="d-flex flex-wrap gap-2">
+            {% for team in event.teams %}
+                <span class="badge bg-white text-dark border px-3 py-2 shadow-sm">
+                    {% if event.sport.type == 'individual' %}
+                        <i class="fas fa-user text-muted me-1"></i> 
+                    {% else %}
+                        <i class="fas fa-shield-alt text-muted me-1"></i> 
+                    {% endif %}
+                    {{ team.name }}
+                </span>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning border-0 small">
+            <i class="fas fa-exclamation-circle me-1"></i> No registrations yet. Be the first to join!
+        </div>
+    {% endif %}
+</div>
+
+<div class="modal-footer border-0">
+    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Close</button>
+    {% if current_user.is_authenticated %}
+        <a href="#" class="btn btn-primary rounded-pill px-4">Register Now</a>
+    {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary rounded-pill px-4">Login to Register</a>
+    {% endif %}
+</div>

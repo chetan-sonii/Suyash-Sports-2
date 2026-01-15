@@ -1,0 +1,85 @@
+/* static/css/public/index.css
+   Minimal header styles for the forum.
+   Keep it small and override Bootstrap where needed.
+*/
+
+:root {
+    --primary: #0d6efd;
+    --muted: #6c757d;
+}
+
+/* body / main spacing */
+body {
+    font-family: "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: #f8f9fa;
+    color: #212529;
+}
+
+.site-main {
+    padding-top: 1.25rem;
+}
+
+/* header tweaks */
+.site-header .navbar {
+    padding-top: .4rem;
+    padding-bottom: .4rem;
+}
+
+.navbar-brand img {
+    height: 36px;
+}
+
+/* notification badge */
+.notif-badge {
+    top: -6px;
+    right: -6px;
+    font-size: 10px;
+    padding: 0.18rem 0.35rem;
+}
+
+/* dropdown item small preview line */
+.dropdown-item .text-truncate {
+    max-width: 260px;
+}
+
+/* search small on lg but full width on mobile */
+@media (max-width: 991px) {
+    .navbar .form-control {
+        width: 55vw;
+        min-width: 160px;
+    }
+
+    .navbar .btn.btn-sm {
+        display: none;
+    }
+}
+
+/* make dropdown-menu not too tall on mobile */
+.dropdown-menu {
+    max-height: 60vh;
+    overflow: auto;
+}
+
+/* create-topic button spacing */
+.btn-success {
+    --bs-btn-padding-y: .35rem;
+    --bs-btn-padding-x: .6rem;
+}
+
+/* small avatar round */
+.navbar .rounded-circle {
+    object-fit: cover;
+}
+
+/* small visual helpers for accessibility focus */
+.nav-link:focus,
+.btn:focus,
+.dropdown-item:focus {
+    outline: 3px solid rgba(13, 110, 253, 0.12);
+    outline-offset: 2px;
+}
+
+/* optional: subtle header shadow */
+.navbar {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}

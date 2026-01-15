@@ -1,0 +1,38 @@
+<div class="bg-dark text-white" id="sidebar-wrapper">
+    <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom">
+        <i class="fas fa-bolt text-warning me-2"></i>
+        {% if current_user.role == 'admin' %} Admin {% else %} Manager {% endif %}
+    </div>
+    
+    <div class="list-group list-group-flush my-3">
+        {% if current_user.role == 'manager' %}
+            <a href="{{ url_for('users.manager_dashboard') }}" 
+               class="list-group-item list-group-item-action bg-transparent second-text {{ 'active' if active_page == 'overview' else '' }}">
+                <i class="fas fa-tachometer-alt me-2"></i>Overview
+            </a>
+            
+            <a href="{{ url_for('users.create_event') }}" 
+               class="list-group-item list-group-item-action bg-transparent second-text {{ 'active' if active_page == 'create_event' else '' }}">
+                <i class="fas fa-plus-circle me-2"></i>Create Event
+            </a>
+            
+            <a href="#" class="list-group-item list-group-item-action bg-transparent second-text {{ 'active' if active_page == 'my_events' else '' }}">
+                <i class="fas fa-calendar-check me-2"></i>My Tournaments
+            </a>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action bg-transparent second-text">
+                <i class="fas fa-cogs me-2"></i>System Settings
+            </a>
+        {% endif %}
+
+        <a href="{{ url_for('users.dashboard') }}" class="list-group-item list-group-item-action bg-transparent second-text">
+            <i class="fas fa-user-circle me-2"></i>My Profile
+        </a>
+        
+        <a href="{{ url_for('auth.logout') }}" class="list-group-item list-group-item-action bg-transparent text-danger fw-bold mt-5">
+            <i class="fas fa-power-off me-2"></i>Logout
+        </a>
+    </div>
+</div>

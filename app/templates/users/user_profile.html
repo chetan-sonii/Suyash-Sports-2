@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+  {% block extra_css %}
+  <style>
+/*body:not(.home-page) main {
+    padding-top: 100px;
+}*/
+</style>
+
+  {% endblock %}
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 text-center overflow-hidden">
+                <div class="card-header bg-primary p-4 border-0">
+                    </div>
+                <div class="card-body position-relative mt-n5">
+                    <div class="position-relative d-inline-block">
+                        <img src="{{ url_for('static', filename=current_user.avatar_url) }}" 
+                             class="rounded-circle border border-5 border-white shadow" 
+                             style="width: 150px; height: 150px; object-fit: cover;" 
+                             alt="User Avatar">
+                        
+                        <button class="btn btn-sm btn-dark rounded-circle position-absolute bottom-0 end-0 mb-2 me-2" 
+                                data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+
+                    <h3 class="fw-bold mt-3">{{ current_user.username }}</h3>
+                    <p class="text-muted mb-1">{{ current_user.email }}</p>
+                    <span class="badge {{ 'bg-danger' if current_user.role == 'admin' else 'bg-info' if current_user.role == 'manager' else 'bg-secondary' }} rounded-pill px-3">
+                        {{ current_user.role|capitalize }}
+                    </span>
+
+                    <div class="row mt-4 border-top pt-3">
+                        <div class="col-6 border-end">
+                            <h5 class="fw-bold mb-0">{{ current_user.saved_events|length }}</h5>
+                            <small class="text-muted">Events Joined</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="fw-bold mb-0">Active</h5>
+                            <small class="text-muted">Status</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline-primary w-100 rounded-pill mt-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-calendar-check text-primary me-2"></i> My Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.saved_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in current_user.saved_events %}
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center bg-light rounded mb-2 p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white p-2 rounded shadow-sm text-center me-3" style="width: 60px;">
+                                        <small class="d-block fw-bold text-danger">{{ event.start_date.strftime('%b') }}</small>
+                                        <h5 class="mb-0 fw-bold">{{ event.start_date.strftime('%d') }}</h5>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ event.title }}</h6>
+                                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ event.venue.name }}</small>
+                                    </div>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-primary rounded-pill">View</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="far fa-calendar-times fa-3x mb-3 opacity-50"></i>
+                            <p>You haven't joined any events yet.</p>
+                            <a href="{{ url_for('public.index') }}#events" class="btn btn-link">Browse Events</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light border-0">
+                <h5 class="modal-title fw-bold">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('users.update_profile') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ current_user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Profile Picture</label>
+                        <input type="file" name="avatar" class="form-control" accept="image/*">
+                        <div class="form-text">Allowed formats: JPG, PNG.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
