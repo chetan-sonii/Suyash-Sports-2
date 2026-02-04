@@ -15,17 +15,16 @@ TOTAL_MANAGERS = 5
 TOTAL_VENUES = 10
 EVENTS_PER_MANAGER = 2
 
+# --- CHHATTISGARH CONFIGURATION ---
+CG_CITIES = ['Raipur', 'Bilaspur', 'Durg', 'Bhilai']
+
 
 def create_database():
     """Creates the database using credentials from config.py"""
     print("Checking database...")
-
-    # Build URI from Config
     db_uri = f"{Config.DB_ENGINE}://{Config.DB_USER}:{Config.DB_PASSWORD}@{Config.DB_HOST}:{Config.DB_PORT}"
-
     engine = sqlalchemy.create_engine(db_uri)
     conn = engine.connect()
-
     db_name = Config.DB_NAME
     try:
         conn.execute(sqlalchemy.text(f"CREATE DATABASE IF NOT EXISTS {db_name}"))
@@ -34,6 +33,33 @@ def create_database():
         print(f"❌ Error creating database: {e}")
     finally:
         conn.close()
+
+
+def seed_weightlifting():
+    """Adds Weightlifting with the CORRECT schema for the frontend."""
+    print("🏋️ Seeding Weightlifting...")
+
+    wl_schema = {
+        "type": "individual",
+        "roles": [],
+        "categories": [
+            "Men's 55kg", "Men's 61kg", "Men's 67kg", "Men's 73kg", "Men's 81kg",
+            "Men's 96kg", "Men's 109kg", "Men's +109kg",
+            "Women's 45kg", "Women's 49kg", "Women's 55kg", "Women's 64kg",
+            "Women's 76kg", "Women's 87kg", "Women's +87kg"
+        ],
+        "scoring_fields": ["snatch_1", "snatch_2", "snatch_3", "cj_1", "cj_2", "cj_3"]
+    }
+
+    wl = Sport.query.filter_by(name="Weightlifting").first()
+    if not wl:
+        wl = Sport(name="Weightlifting", type="individual", config_schema=wl_schema)
+        db.session.add(wl)
+    else:
+        wl.config_schema = wl_schema
+
+    db.session.commit()
+    print("✅ Weightlifting configured successfully.")
 
 
 def seed_data():
@@ -65,40 +91,36 @@ def seed_data():
             db_sports.append(sport)
         db.session.commit()
 
-        # 3. USERS (Admin, Managers, Public)
-        print("busts Seeding Users...")
+        # Call Weightlifting Seeder HERE (inside context)
+        seed_weightlifting()
 
-        # --- A. ADMIN ---
+        # 3. USERS
+        print("👥 Seeding Users...")
+        # Admin
         admin = User(username='admin', email='admin@suyash.com', role='admin')
         admin.set_password(Config.ADMIN_PASSWORD)
         db.session.add(admin)
 
-        # --- B. MANAGERS ---
+        # Managers
         managers = []
-
-        # Specific Manager
         suyash_mgr = User(username='suyashmanager', email='suyashmanager@gmail.com', role='manager')
         suyash_mgr.set_password(Config.MANAGER_PASSWORD)
         db.session.add(suyash_mgr)
         managers.append(suyash_mgr)
 
-        # Random Managers
         for _ in range(TOTAL_MANAGERS - 1):
             mgr = User(username=fake.first_name(), email=fake.unique.email(), role='manager')
             mgr.set_password(Config.MANAGER_PASSWORD)
             db.session.add(mgr)
             managers.append(mgr)
 
-        # --- C. PUBLIC USERS ---
+        # Public Users
         public_users = []
-
-        # Specific User
         suyash_user = User(username='suyashuser', email='suyashuser@gmail.com', role='user')
         suyash_user.set_password(Config.USER_PASSWORD)
         db.session.add(suyash_user)
         public_users.append(suyash_user)
 
-        # Random Users
         for _ in range(TOTAL_USERS - 1):
             usr = User(username=fake.user_name(), email=fake.unique.email(), role='user')
             usr.set_password(Config.USER_PASSWORD)
@@ -107,12 +129,11 @@ def seed_data():
 
         db.session.commit()
 
-        # 4. VENUES
-        print("🏟️  Seeding Venues...")
+        # 4. VENUES (CG Cities Only)
+        print("🏟️  Seeding Venues (Chhattisgarh)...")
         venues = []
-        cities = ['Mumbai', 'Delhi', 'Raipur', 'Bangalore', 'Chennai', 'Pune', 'Jaipur', 'Hyderabad']
         for _ in range(TOTAL_VENUES):
-            city = random.choice(cities)
+            city = random.choice(CG_CITIES)
             v_name = f"{fake.company()} Stadium"
             venue = Venue(name=v_name, city=city, address=fake.address())
             db.session.add(venue)
@@ -135,8 +156,10 @@ def seed_data():
                 else:
                     status = 'upcoming'
 
+                # Use CG City for Title
+                event_city = random.choice(CG_CITIES)
                 event = Event(
-                    title=f"{fake.city()} {sport.name} Cup {start_date.year}",
+                    title=f"{event_city} {sport.name} Cup {start_date.year}",
                     sport_id=sport.id, manager_id=mgr.id, venue_id=random.choice(venues).id,
                     start_date=start_date, description=fake.paragraph(nb_sentences=2),
                     status=status, rules_config={"standard": {"overs": 20}, "custom": []}
@@ -151,8 +174,11 @@ def seed_data():
             if event.sport.type == 'team':
                 teams_in_event = []
                 for _ in range(random.randint(4, 6)):
-                    t_name = f"{fake.city()} {random.choice(['Lions', 'Tigers', 'Royals', 'Stars'])}"
-                    team = Team(event_id=event.id, name=t_name, city=event.venue.city, coach_name=fake.name())
+                    # Use CG City for Team Name
+                    team_city = random.choice(CG_CITIES)
+                    t_name = f"{team_city} {random.choice(['Lions', 'Tigers', 'Royals', 'Stars', 'Warriors'])}"
+
+                    team = Team(event_id=event.id, name=t_name, city=team_city, coach_name=fake.name())
                     db.session.add(team)
                     teams_in_event.append(team)
                 db.session.commit()
@@ -185,59 +211,12 @@ def seed_data():
 
         db.session.commit()
 
-        print("\n✨ SUCCESS! Database seeded.")
+        print("\n✨ SUCCESS! Database seeded with Chhattisgarh Data.")
+        print(f"   - Cities used: {', '.join(CG_CITIES)}")
         print(f"   - Specific Manager: suyashmanager@gmail.com")
         print(f"   - Specific User: suyashuser@gmail.com")
-        print(f"   - Total Managers: {len(managers)}")
-        print(f"   - Total Users: {len(public_users)}")
 
 
-def seed_weightlifting():
-    """
-    Adds Weightlifting sport and its specific weight categories.
-    """
-    print("🏋️ Seeding Weightlifting...")
-
-    # 1. Create the Sport
-    weightlifting = Sport.query.filter_by(name="Weightlifting").first()
-    if not weightlifting:
-        weightlifting = Sport(
-            name="Weightlifting",
-            type="Individual",  # It's an individual sport
-            description="Olympic weightlifting consisting of Snatch and Clean & Jerk."
-        )
-        db.session.add(weightlifting)
-        db.session.commit()
-
-    # 2. Define Standard Weight Categories (Olympic Classes)
-    # You can adjust these based on your college/tournament rules
-    categories = [
-        # Men's Categories
-        "Men's 55kg", "Men's 61kg", "Men's 67kg", "Men's 73kg",
-        "Men's 81kg", "Men's 89kg", "Men's 96kg", "Men's 102kg",
-        "Men's 109kg", "Men's +109kg",
-
-        # Women's Categories
-        "Women's 45kg", "Women's 49kg", "Women's 55kg", "Women's 59kg",
-        "Women's 64kg", "Women's 71kg", "Women's 76kg", "Women's 81kg",
-        "Women's 87kg", "Women's +87kg"
-    ]
-
-    # 3. Create Events for each Category
-    for cat_name in categories:
-        exists = Event.query.filter_by(name=cat_name, sport_id=weightlifting.id).first()
-        if not exists:
-            event = Event(
-                name=cat_name,
-                sport_id=weightlifting.id,
-                # If you have a column for max_participants or gender, add it here
-                # gender = 'Male' if "Men" in cat_name else 'Female'
-            )
-            db.session.add(event)
-
-    db.session.commit()
-    print("✅ Weightlifting and Categories seeded successfully.")
 if __name__ == '__main__':
     create_database()
-    seed_weightlifting()
     seed_data()

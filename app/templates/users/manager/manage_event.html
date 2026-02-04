@@ -183,7 +183,10 @@
                                     </td>
                                     <td><span class="badge bg-light text-dark border">{{ fixture.round_name }}</span></td>
                                     <td class="text-end pe-4">
-                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
+
+                                        >
+<!--    onclick="openScoreModal({{ fixture.id }}, '{{ fixture.title }}')"-->
                                             Score <i class="fas fa-edit ms-1"></i>
                                         </button>
                                     </td>
@@ -317,7 +320,48 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="scoreModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="scoreModalTitle">Score Match</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <form id="scoreForm">
+                    <input type="hidden" id="scoreFixtureId" name="fixture_id">
 
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped text-center align-middle mb-0">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th rowspan="2" class="align-middle">Player</th>
+                                    <th colspan="3" class="text-primary border-bottom-0">Snatch (kg)</th>
+                                    <th colspan="3" class="text-danger border-bottom-0">Clean & Jerk (kg)</th>
+                                    <th rowspan="2" class="align-middle bg-light">Total</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-primary"><small>1</small></th>
+                                    <th class="text-primary"><small>2</small></th>
+                                    <th class="text-primary"><small>3</small></th>
+                                    <th class="text-danger"><small>1</small></th>
+                                    <th class="text-danger"><small>2</small></th>
+                                    <th class="text-danger"><small>3</small></th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoreTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary px-4 fw-bold" onclick="submitScores()">Save Results</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -497,5 +541,82 @@
             }
         });
     }
+    // OPEN MODAL & LOAD PLAYERS
+function openScoreModal(fixtureId, title) {
+    $('#scoreModalTitle').text("Scoring: " + title);
+    $('#scoreFixtureId').val(fixtureId);
+    $('#scoreTableBody').html('<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>');
+
+    // Fetch players and existing scores
+    $.ajax({
+        url: `/users/api/fixture/${fixtureId}/get_scores`,
+        success: function(resp) {
+            let html = '';
+            if(resp.players.length === 0) {
+                 html = '<tr><td colspan="9" class="text-center py-4 text-muted">No players found in this event. Add teams/players first.</td></tr>';
+            } else {
+                resp.players.forEach(p => {
+                    // p.scores is an object like {s1: 100, s2: 105...}
+                    let s = p.scores || {};
+                    let weightClass = (p.details && p.details.weight_class) ? p.details.weight_class : '-';
+
+                    html += `
+                    <tr>
+                        <td class="text-start ps-3">
+                            <div class="fw-bold">${p.name}</div>
+                            <div class="small text-muted">${p.team_name} • ${weightClass}</div>
+                        </td>
+
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_s1" value="${s.s1 || ''}" placeholder="-"></td>
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_s2" value="${s.s2 || ''}" placeholder="-"></td>
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_s3" value="${s.s3 || ''}" placeholder="-"></td>
+
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_c1" value="${s.c1 || ''}" placeholder="-"></td>
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_c2" value="${s.c2 || ''}" placeholder="-"></td>
+                        <td><input type="number" class="form-control form-control-sm text-center" name="p_${p.id}_c3" value="${s.c3 || ''}" placeholder="-"></td>
+
+                        <td class="fw-bold fs-5 bg-light">${s.total || 0}</td>
+                    </tr>`;
+                });
+            }
+            $('#scoreTableBody').html(html);
+            $('#scoreModal').modal('show');
+        }
+    });
+}
+
+// SUBMIT SCORES
+function submitScores() {
+    $.ajax({
+        url: "/users/api/save_scores",
+        type: "POST",
+        data: $('#scoreForm').serialize(),
+        success: function(resp) {
+            alert(resp.message);
+            $('#scoreModal').modal('hide');
+        },
+        error: function(err) {
+            alert("Error saving scores");
+        }
+    });
+}
+    // DELETE PLAYER FUNCTION
+function deletePlayer(playerId) {
+    if(!confirm("Are you sure you want to remove this player from the squad?")) {
+        return;
+    }
+
+    $.ajax({
+        url: `/users/api/player/${playerId}/delete`,
+        type: "POST",
+        success: function(resp) {
+            // Refresh the squad list to show the player is gone
+            loadSquad(activeTeamId, $('#selectedTeamName').text());
+        },
+        error: function(err) {
+            alert("Error removing player: " + (err.responseJSON ? err.responseJSON.message : "Unknown error"));
+        }
+    });
+}
 </script>
 {% endblock %}

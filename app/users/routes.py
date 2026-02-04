@@ -332,3 +332,107 @@ def change_password():
 
     flash('Password updated successfully!', 'success')
     return redirect(url_for('users.profile'))
+
+
+# ==========================================
+# 5. SCORING APIS (NEW)
+# ==========================================
+
+# ==========================================
+# 5. SCORING APIS (NEW)
+# ==========================================
+
+@users_bp.route("/api/fixture/<int:fixture_id>/get_scores")
+@login_required
+def get_fixture_scores(fixture_id):
+    fixture = Fixture.query.get_or_404(fixture_id)
+    event = fixture.event
+
+    # Get all players participating in this event
+    players = []
+    teams = Team.query.filter_by(event_id=event.id).all()
+
+    for team in teams:
+        for player in team.players:
+            # Check if this player has a score in this specific fixture
+            # score_data structure: {'player_id_123': {'s1': 100, 'total': 200...}}
+            current_score = {}
+            if fixture.score_data:
+                current_score = fixture.score_data.get(str(player.id), {})
+
+            players.append({
+                'id': player.id,
+                'name': player.name,
+                'team_name': team.name,
+                'details': player.details,  # Contains weight_class
+                'scores': current_score
+            })
+
+    return jsonify({'players': players})
+
+
+@users_bp.route("/api/save_scores", methods=['POST'])
+@login_required
+def save_scores():
+    data = request.form
+    fixture_id = data.get('fixture_id')
+    fixture = Fixture.query.get_or_404(fixture_id)
+
+    # Initialize score dictionary
+    # We organize data by player ID
+    temp_scores = {}
+
+    # Parse the form data
+    # Keys look like: "p_12_s1" (Player 12, Snatch 1) or "p_5_c3" (Player 5, Clean & Jerk 3)
+    for key, value in data.items():
+        if key.startswith('p_'):
+            try:
+                parts = key.split('_')
+                p_id = parts[1]
+                metric = parts[2]  # s1, s2, c1, etc.
+
+                if p_id not in temp_scores:
+                    temp_scores[p_id] = {}
+
+                # Convert value to float, default to 0 if empty
+                temp_scores[p_id][metric] = float(value) if value else 0
+            except:
+                continue
+
+    # Calculate Totals logic
+    final_data = {}
+    for p_id, attempts in temp_scores.items():
+        # Get Best Snatch (Max of s1, s2, s3)
+        best_snatch = max(attempts.get('s1', 0), attempts.get('s2', 0), attempts.get('s3', 0))
+
+        # Get Best Clean & Jerk (Max of c1, c2, c3)
+        best_cj = max(attempts.get('c1', 0), attempts.get('c2', 0), attempts.get('c3', 0))
+
+        attempts['best_snatch'] = best_snatch
+        attempts['best_cj'] = best_cj
+        attempts['total'] = best_snatch + best_cj
+
+        final_data[p_id] = attempts
+
+    # Save to DB
+    fixture.score_data = final_data
+    db.session.commit()
+
+    return jsonify({'status': 'success', 'message': 'Scores updated successfully!'})
+
+
+@users_bp.route("/api/player/<int:player_id>/delete", methods=['POST'])
+@login_required
+def delete_player(player_id):
+    player = Player.query.get_or_404(player_id)
+
+    # SECURITY: Ensure the current user owns the event this player belongs to
+    if player.team.event.manager_id != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized action'}), 403
+
+    try:
+        db.session.delete(player)
+        db.session.commit()
+        return jsonify({'status': 'success', 'message': 'Player removed'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

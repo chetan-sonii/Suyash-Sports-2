@@ -23,9 +23,11 @@
                     {% endif %}
                 </td>
                 <td class="text-end">
-                    <button class="btn btn-sm text-danger hover-scale">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <td class="text-end">
+    <button class="btn btn-sm text-danger hover-scale" onclick="deletePlayer({{ player.id }})">
+        <i class="fas fa-trash"></i>
+    </button>
+</td>
                 </td>
             </tr>
             {% else %}
